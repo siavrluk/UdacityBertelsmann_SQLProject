@@ -1,0 +1,64 @@
+1) How many purchases do Americans make per year?
+
+SELECT STRFTIME('%Y', I.InvoiceDate) Year, C.Country, count(I.Total) 'Numbrer of Purchases per Year'
+FROM Invoice I
+JOIN Customer C
+	ON I.CustomerId = C.CustomerId
+WHERE C.Country = 'USA'
+GROUP BY 1, 2 
+ORDER BY 2, 1;
+
+
+2) How much money on average does a customer spend on music per country?
+
+SELECT C.Country, sum(I.Total) / count(distinct I.CustomerId)
+FROM Customer C
+JOIN Invoice I
+	ON C.CustomerId = I.CustomerId
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+3) What is the most popular genre?
+
+SELECT COUNT(I.Total) Purchases, G.Name Genre, G.GenreId
+FROM Invoice I
+JOIN InvoiceLine IL
+	ON I.InvoiceId = IL.InvoiceId
+JOIN Track T
+	ON IL.TrackId = T.TrackId
+JOIN Genre G
+	ON T.GenreId = G.GenreId
+GROUP BY 2, 3;
+
+
+4) Advanced SQL: Question Set 3, Question 1: What is the most popular genre per county?
+
+SELECT t2.Purchases, t1.Country, t2.Name, t2.GenreId
+FROM (SELECT max(Purchases) max_Purchases, Country
+		FROM (SELECT count(I.Total) Purchases, C.Country
+		FROM Customer C
+		JOIN Invoice I
+			ON C.CustomerId = I.CustomerId
+		JOIN InvoiceLine IL
+			ON I.InvoiceId = IL.InvoiceID
+		JOIN Track T
+			ON IL.TrackId = T.TrackId
+		JOIN Genre G
+		ON T.GenreId = G.GenreId
+		GROUP BY C.Country, G.Name, G.GenreId) GROUP BY Country) t1
+JOIN (SELECT count(I.Total) Purchases, C.Country, G.Name, G.GenreId
+		FROM Customer C
+	JOIN Invoice I
+		ON C.CustomerId = I.CustomerId
+	JOIN InvoiceLine IL
+		ON I.InvoiceId = IL.InvoiceID
+	JOIN Track T
+		ON IL.TrackId = T.TrackId
+	JOIN Genre G
+		ON T.GenreId = G.GenreId
+	GROUP BY C.Country, G.Name, G.GenreId) t2
+ON t1.max_Purchases = t2.Purchases and t1.Country = t2.Country;
+
+
+
